@@ -38,16 +38,25 @@ export default class Main extends Component {
   };
 
   async componentDidMount() {
-    const { users } = await AsyncStorage.getItem('users');
-    if (users) {
-      this.setState({ users: JSON.parse(users) });
+    try {
+      const users = await AsyncStorage.getItem('users');
+
+      if (users) {
+        this.setState({ users: JSON.parse(users) });
+      }
+    } catch (error) {
+      console.tron.log(error);
     }
   }
 
   componentDidUpdate(_, prevState) {
     const { users } = this.state;
     if (prevState.users !== users) {
-      AsyncStorage.setItem('users', JSON.stringify(users));
+      try {
+        AsyncStorage.setItem('users', JSON.stringify(users));
+      } catch (error) {
+        console.tron.log(error);
+      }
     }
   }
 
