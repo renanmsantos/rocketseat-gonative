@@ -85,3 +85,11 @@ export const ProfileButtonText = styled.Text`
   color: #fff;
   text-transform: uppercase;
 `;
+
+export const ErrorText = styled.Text`
+  color: #ff817e;
+  margin-bottom: 20;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+`;

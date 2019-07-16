@@ -4,7 +4,9 @@ import { Keyboard, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import api from '../../services/api';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 
 import {
   Container,
@@ -18,9 +20,10 @@ import {
   Bio,
   ProfileButton,
   ProfileButtonText,
+  ErrorText,
 } from './styles';
 
-export default class Main extends Component {
+class Main extends Component {
   static navigationOptions = {
     title: 'User',
   };
@@ -29,11 +32,13 @@ export default class Main extends Component {
     navigation: PropTypes.shape({
       navigate: PropTypes.func,
     }).isRequired,
+    userFound: PropTypes.func.isRequired,
+    userNotFound: PropTypes.func.isRequired,
+    error: PropTypes.bool.isRequired,
   };
 
   state = {
-    newUser: '',
-    users: [],
+    username: '',
     loading: false,
   };
 
@@ -66,31 +71,19 @@ export default class Main extends Component {
   };
 
   handleAddUser = async () => {
-    const { users, newUser } = this.state;
+    const { newUser } = this.state;
+    const { userFound, userNotFound } = this.props;
 
     this.setState({
       loading: true,
-    });
-
-    const response = await api.get(`/users/${newUser}`);
-    const data = {
-      name: response.data.name,
-      login: response.data.login,
-      bio: response.data.bio,
-      avatar: response.data.avatar_url,
-    };
-
-    this.setState({
-      users: [...users, data],
-      newUser: '',
-      loading: false,
     });
 
     Keyboard.dismiss();
   };
 
   render() {
-    const { users, newUser, loading } = this.state;
+    const { username, loading } = this.state;
+    const { error } = this.props;
     return (
       <Container>
         <Form>
@@ -98,8 +91,8 @@ export default class Main extends Component {
             autoCorrect={false}
             autoCapitalize="none"
             placeholder="Add new user"
-            value={newUser}
-            onChangeText={text => this.setState({ newUser: text })}
+            value={username}
+            onChangeText={text => this.setState({ username: text })}
             returnKeyType="send"
             onSubmitEditing={this.handleAddUser}
           />
@@ -110,6 +103,7 @@ export default class Main extends Component {
               <Icon name="add" size={20} color="#fff" />
             )}
           </SubmitButton>
+          {error && <ErrorText>User not found</ErrorText>}
         </Form>
         <List
           data={users}
@@ -130,3 +124,16 @@ export default class Main extends Component {
     );
   }
 }
+
+const mapStateToProps = state => ({
+  user: state.login.user,
+  error: state.login.error,
+});
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(UserActions, dispatch);
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Main);
